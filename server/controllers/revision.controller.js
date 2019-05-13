@@ -1,5 +1,7 @@
 const revisionModel = require("../model/Revision");
 const validator = require("../services/validator");
+const fs = require('fs')
+const async = require('async')
 
 module.exports = {
   // fetch a count of all records
@@ -236,6 +238,54 @@ module.exports = {
           response.json({ status: "success", message: "Fetched youngest article", data: result });
   
           next(); 
+        }
+      })
+    }, 
+
+    getRevisionsByUserType: async (request, response, next) => {
+
+      function readAsync(file, callback) {
+        fs.readFile(file, 'utf8', callback);
+      }
+
+      await revisionModel.find({}, function(err, results) {
+        if (err){
+  
+          response.json({ status: "error", message: "Problem with getting revisions by user type", data: null}); 
+          
+          next(); 
+
+        } else {
+          
+          var bot_contents = "";
+          var admin_contents = "";
+
+          files = ["bot.txt", "admin_active.txt", "admin_inactive.txt", "admin_semi_active.txt", "admin_former.txt"];
+
+          async.map(files, readAsync, function(err, contents) {
+            if (contents) { 
+              bot_contents = contents[0].toString(); 
+              admin_contents = contents[1].toString() + contents[2].toString() + contents[3].toString() + contents[4].toString(); 
+              userArticleCount = {'anon': 0, 'bot': 0, 'admin': 0, 'regular': 0}
+
+              for (var i=0; i < results.length; i++) {
+                if (results[i].anon) {
+                  userArticleCount['anon'] += 1; 
+                } else if (admin_contents.includes(results[i].user)) { 
+                  userArticleCount['admin'] += 1; 
+                } else if (bot_contents.includes(results[i].user)) { 
+                  userArticleCount['bot'] += 1; 
+                } else { 
+                  userArticleCount['regular'] += 1; 
+                }
+              }
+    
+              response.json({ status: "success", message: "got breakdown of revisions by user type", data: userArticleCount}); 
+              next(); 
+
+            }
+          });
+
         }
       })
     }
