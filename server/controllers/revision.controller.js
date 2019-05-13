@@ -288,5 +288,37 @@ module.exports = {
 
         }
       })
+    }, 
+
+    displaySummaryInformation: async (request, response, next) => {
+      reqTitle = request.query.title;
+      
+      var summaryPipeline = [
+        {"$match": { 'title': reqTitle }}, 
+        {'$facet': {
+          "Total": [ 
+            {'$count': "Total"}
+          ], 
+          "TopFive": [
+            {'$group': {'_id': "$user", "usercount": {$sum: 1}}},
+            {'$sort': { "usercount" : -1}}, 
+            {'$limit': 5}
+          ]
+        }
+      }]
+
+      await revisionModel.aggregate(summaryPipeline, function(err, result) { 
+        if (err){
+  
+          response.json({ status: "error", message: "Problem with fetching individual article summary", data: null}); 
+          
+          next(); 
+
+        } else {
+          response.json({ status: "success", message: "Fetched individual summary article for " + reqTitle, data: result });
+  
+          next(); 
+        }
+      })
     }
 };
