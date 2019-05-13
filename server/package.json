@@ -1,0 +1,20 @@
+{
+  "name": "article-insight",
+  "version": "1.0.0",
+  "description": "COMP5347 Group Assignment",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "author": "Nafis Ali, Michael Muni, Tushar Chawla",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^3.0.6",
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.5.4"
+  }
+}
